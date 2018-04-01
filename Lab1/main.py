@@ -12,6 +12,7 @@ import torchvision.transforms as transforms
 
 import os
 import argparse
+import csv 
 
 from models import *
 from utils import progress_bar
@@ -33,12 +34,12 @@ transform_train = transforms.Compose([
     transforms.RandomCrop(32, padding=4),
     transforms.RandomHorizontalFlip(),
     transforms.ToTensor(),
-    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+    transforms.Normalize((0.4914, 0.4824, 0.4467), (0.2471, 0.2435, 0.2616)),
 ])
 
 transform_test = transforms.Compose([
     transforms.ToTensor(),
-    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+    transforms.Normalize((0.4914, 0.4824, 0.4467), (0.2471, 0.2435, 0.2616)),
 ])
 
 trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform_train)
@@ -48,6 +49,14 @@ testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True
 testloader = torch.utils.data.DataLoader(testset, batch_size=100, shuffle=False, num_workers=2)
 
 classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+
+trainf = open('./result/trainRes110.csv', 'w')
+trainw = csv.writer(trainf)
+trainWriteData = []
+
+testf = open('./result/testRes110.csv', 'w')
+testw = csv.writer(testf)
+testWriteData = []
 
 # Model
 if args.resume:
@@ -62,12 +71,15 @@ else:
     print('==> Building model..')
     # net = VGG('VGG19')
     # net = ResNet18()
+    # net = ResNet20()
+    # net = ResNet56()
+    net = ResNet110()
     # net = PreActResNet18()
     # net = GoogLeNet()
     # net = DenseNet121()
     # net = ResNeXt29_2x64d()
     # net = MobileNet()
-    net = MobileNetV2()
+    # net = MobileNetV2()
     # net = DPN92()
     # net = ShuffleNetG2()
     # net = SENet18()
@@ -78,7 +90,7 @@ if use_cuda:
     cudnn.benchmark = True
 
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0.9, weight_decay=5e-4)
+optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0.9, weight_decay=1e-4)
 
 # Training
 def train(epoch):
@@ -101,7 +113,9 @@ def train(epoch):
         _, predicted = torch.max(outputs.data, 1)
         total += targets.size(0)
         correct += predicted.eq(targets.data).cpu().sum()
-
+	
+	trainWriteData[epoch/2].append(100.*correct/total)
+	trainWriteData[epoch/2+1].append(train_loss/(batch_idx+1))
         progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
             % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
@@ -123,6 +137,8 @@ def test(epoch):
         total += targets.size(0)
         correct += predicted.eq(targets.data).cpu().sum()
 
+	testWriteData[epoch/2].append(100.*correct/total)
+	testWriteData[epoch/2+1].append(test_loss/(batch_idx+1))
         progress_bar(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
             % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
@@ -141,6 +157,17 @@ def test(epoch):
         best_acc = acc
 
 
-for epoch in range(start_epoch, start_epoch+200):
-    train(epoch)
-    test(epoch)
+for epoch in range(start_epoch, start_epoch+164):
+	trainWriteData.append([])
+	trainWriteData.append([])
+	trainWriteData.append([])
+	testWriteData.append([])
+	testWriteData.append([])
+	train(epoch)
+	test(epoch)
+
+trainw.writerows(trainWriteData)
+trainf.close()
+
+testw.writerows(testWriteData)
+testf.close()
