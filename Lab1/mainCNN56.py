@@ -50,11 +50,11 @@ testloader = torch.utils.data.DataLoader(testset, batch_size=100, shuffle=False,
 
 classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
-trainf = open('./result/trainCNN110.csv', 'w')
+trainf = open('./result/trainCNN56.csv', 'w')
 trainw = csv.writer(trainf)
 trainWriteData = []
 
-testf = open('./result/testCNN110.csv', 'w')
+testf = open('./result/testCNN56.csv', 'w')
 testw = csv.writer(testf)
 testWriteData = []
 
@@ -72,8 +72,8 @@ else:
     # net = VGG('VGG19')
     # net = ResNet18()
     # net = ResNet20()
-    # net = ResNet56()
-    net = ResNet110()
+    net = ResNet56()
+    # net = ResNet110()
     # net = PreActResNet18()
     # net = GoogLeNet()
     # net = DenseNet121()
