@@ -114,8 +114,8 @@ def train(epoch):
         total += targets.size(0)
         correct += predicted.eq(targets.data).cpu().sum()
 	
-	trainWriteData[epoch/2].append(100.*correct/total)
-	trainWriteData[epoch/2+1].append(train_loss/(batch_idx+1))
+	trainWriteData[epoch*2].append(100.*correct/total)
+	trainWriteData[epoch*2+1].append(train_loss/(batch_idx+1))
         progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
             % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
@@ -137,8 +137,8 @@ def test(epoch):
         total += targets.size(0)
         correct += predicted.eq(targets.data).cpu().sum()
 
-	testWriteData[epoch/2].append(100.*correct/total)
-	testWriteData[epoch/2+1].append(test_loss/(batch_idx+1))
+	testWriteData[epoch*2].append(100.*correct/total)
+	testWriteData[epoch*2+1].append(test_loss/(batch_idx+1))
         progress_bar(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
             % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
