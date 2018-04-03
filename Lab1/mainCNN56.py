@@ -165,6 +165,8 @@ for epoch in range(start_epoch, start_epoch+164):
 	testWriteData.append([])
 	train(epoch)
 	test(epoch)
+	print(trainWriteData[epoch*2])
+	print(trainWriteData[epoch*2 + 1])
 
 trainw.writerows(trainWriteData)
 trainf.close()
