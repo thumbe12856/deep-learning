@@ -50,11 +50,11 @@ testloader = torch.utils.data.DataLoader(testset, batch_size=100, shuffle=False,
 
 classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
-trainf = open('./result/trainRes20.csv', 'w')
+trainf = open('./result/trainRes110.csv', 'w')
 trainw = csv.writer(trainf)
 trainWriteData = []
 
-testf = open('./result/testRes20.csv', 'w')
+testf = open('./result/testRes110.csv', 'w')
 testw = csv.writer(testf)
 testWriteData = []
 
@@ -63,7 +63,7 @@ if args.resume:
     # Load checkpoint.
     print('==> Resuming from checkpoint..')
     assert os.path.isdir('checkpoint'), 'Error: no checkpoint directory found!'
-    checkpoint = torch.load('./checkpoint/ckpt.t7')
+    checkpoint = torch.load('./checkpoint/ckpt110.t7')
     net = checkpoint['net']
     best_acc = checkpoint['acc']
     start_epoch = checkpoint['epoch']
@@ -71,9 +71,9 @@ else:
     print('==> Building model..')
     # net = VGG('VGG19')
     # net = ResNet18()
-    net = ResNet20()
+    # net = ResNet20()
     # net = ResNet56()
-    # net = ResNet110()
+    net = ResNet110()
     # net = PreActResNet18()
     # net = GoogLeNet()
     # net = DenseNet121()
@@ -114,8 +114,8 @@ def train(epoch):
         total += targets.size(0)
         correct += predicted.eq(targets.data).cpu().sum()
 	
-	trainWriteData[epoch*2].append(100.*correct/total)
-	trainWriteData[epoch*2+1].append(train_loss/(batch_idx+1))
+	#trainWriteData[epoch*2].append(100.*correct/total)
+	#trainWriteData[epoch*2+1].append(train_loss/(batch_idx+1))
         progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
             % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
@@ -137,8 +137,8 @@ def test(epoch):
         total += targets.size(0)
         correct += predicted.eq(targets.data).cpu().sum()
 
-	testWriteData[epoch*2].append(100.*correct/total)
-	testWriteData[epoch*2+1].append(test_loss/(batch_idx+1))
+	#testWriteData[epoch*2].append(100.*correct/total)
+	#testWriteData[epoch*2+1].append(test_loss/(batch_idx+1))
         progress_bar(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
             % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
@@ -153,7 +153,7 @@ def test(epoch):
         }
         if not os.path.isdir('checkpoint'):
             os.mkdir('checkpoint')
-        torch.save(state, './checkpoint/ckpt.t7')
+        torch.save(state, './checkpoint/ckpt110.t7')
         best_acc = acc
 
 
