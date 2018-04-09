@@ -18,7 +18,7 @@ def getData(file):
 
 img_loss = getData("./old/r1_img.csv")
 img_with_noise = getData("./old/r1_img_with_noise.csv")
-r1_shuffle1 = getData("./old/r1_shuffle.csv")
+r1_shuffle1 = getData("./r1_snail_with_shuffle.csv")
 #r1_shuffle = getData("./r1_shuffle.csv")
 r1_only_noise = getData("./old/r1_only_noise.csv")
 
