@@ -26,6 +26,7 @@ class Neural:
 		self.who = []
 		for j in range(self.nh):
 			self.who.append([0.0]*self.no)
+		print self.wih
 
 		#
 		# Now that weight matrices are created, make the activation matrices.
@@ -34,6 +35,7 @@ class Neural:
 		self.ai=[1.0]*self.ni
 		self.ah=[1.0]*self.nh
 		self.ao=[1.0]*self.no
+		print self.ai
 
 		#
 		# To ensure node weights are randomly assigned, with some bounds on values, we pass it through randomizeMatrix()
