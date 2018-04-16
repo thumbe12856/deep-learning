@@ -17,7 +17,7 @@ def getData(file):
 			if(i % 2 == 0):
 				epoch.append(i / 2 + 1)
 				#accuracy.append(float(row[len(row)-1]))
-				accuracy.append( 100 - float(sum(row) / len(row)))
+				accuracy.append(float(sum(row) / len(row)))
 				
 				if(bestAccuracy < float(sum(row) / len(row))):
 					bestAccuracy = float(sum(row) / len(row))
@@ -59,11 +59,11 @@ font = {'family' : 'normal',
 plt.rc('font', **font)
 
 plt.xlabel("Epoch")
-plt.ylabel("Test error")
+plt.ylabel("Test accuracy")
 
 # Residual
 #plt.plot(epoch, training20Accuracy, label="training20")
-#plt.plot(epoch, testing20Accuracy, label="testingRes20")
+plt.plot(epoch, testing20Accuracy, label="testingRes20")
 #plt.plot(epoch, training56Accuracy, label="training56")
 plt.plot(epoch, testing56Accuracy, "r-", label="testingRes56")
 #plt.plot(epoch, training110Accuracy, label="training110")
@@ -73,9 +73,9 @@ plt.plot(epoch, testing110Accuracy, "g-", label="testingRes110")
 #plt.plot(epoch, trainingCNN20Accuracy, label="trainingCNN20")
 #plt.plot(epoch, testingCNN20Accuracy, label="testingCNN20")
 #plt.plot(epoch, trainingCNN56Accuracy, label="traingCNN56")
-plt.plot(epoch, testingCNN56Accuracy, "r--", label="testingCNN56")
+#plt.plot(epoch, testingCNN56Accuracy, label="testingCNN56")
 #plt.plot(epoch, trainingCNN110Accuracy, label="traingCNN110")
-plt.plot(epoch, testingCNN110Accuracy, "g--", label="testingCNN110")
+#plt.plot(epoch, testingCNN110Accuracy, label="testingCNN110")
 
 
 plt.legend(bbox_to_anchor=(1.05, 1), loc=10, borderaxespad=0.)
