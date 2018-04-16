@@ -34,7 +34,8 @@ training56Accuracy, training56Loss, epoch, training56BestAccuracy = getData("./t
 testing56Accuracy, testing56Loss, epoch, testing56BestAccuracy = getData("./testRes56.csv")
 
 training110Accuracy, training110Loss, epoch, training110BestAccuracy = getData("./trainRes110.csv")
-testing110Accuracy, testing110Loss, epoch, testing110BestAccuracy = getData("./testRes110.csv")
+#testing110Accuracy, testing110Loss, epoch, testing110BestAccuracy = getData("./testRes110.csv")
+testing110Accuracy, testing110Loss, epoch, testing110BestAccuracy = getData("./p100-testRes110.csv")
 
 trainingCNN20Accuracy, trainingCNN20Loss, epoch, trainingCNN20BestAccuracy = getData("./trainCNN20.csv")
 testingCNN20Accuracy, testingCNN20Loss, epoch, testingCNN20BestAccuracy = getData("./testCNN20.csv")
@@ -49,9 +50,9 @@ print len(testing20Accuracy)
 print "testingRes20 accuracy:" + str(testing20BestAccuracy)
 print "testingRes56 accuracy: " + str(testing56BestAccuracy)
 print "testingRes110 accuracy:" + str(testing110BestAccuracy)
-print "testingCNN20 accuracy: " + str(testingCNN20BestAccuracy)
-print "testingCNN56 accuracy: " + str(testingCNN56BestAccuracy)
-print "testingCNN110 accuracy: " + str(testingCNN110BestAccuracy)
+#print "testingCNN20 accuracy: " + str(testingCNN20BestAccuracy)
+#print "testingCNN56 accuracy: " + str(testingCNN56BestAccuracy)
+#print "testingCNN110 accuracy: " + str(testingCNN110BestAccuracy)
 
 
 plt.xlabel("Epoch")
