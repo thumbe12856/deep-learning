@@ -27,7 +27,7 @@ def getData(file):
 	f.close()
 	return accuracy, loss, epoch, bestAccuracy
 
-training20Accuracy, trainin20gLoss, epoch, training20BestAccuracy = getData("./trainRes20.csv")
+training20Accuracy, training20Loss, epoch, training20BestAccuracy = getData("./trainRes20.csv")
 testing20Accuracy, testing20Loss, epoch, testing20BestAccuracy = getData("./testRes20.csv")
 
 training56Accuracy, training56Loss, epoch, training56BestAccuracy = getData("./trainRes56.csv")
@@ -54,43 +54,56 @@ print "testingRes110 accuracy:" + str(testing110BestAccuracy)
 #print "testingCNN56 accuracy: " + str(testingCNN56BestAccuracy)
 #print "testingCNN110 accuracy: " + str(testingCNN110BestAccuracy)
 
+font = {'family' : 'normal',
+        'weight' : 'bold',
+        'size'   : 14}
+
+plt.rc('font', **font)
 
 plt.xlabel("Epoch")
-plt.ylabel("Accuracy")
+plt.ylabel("Test accuracy")
 
 # Residual
 #plt.plot(epoch, training20Accuracy, label="training20")
 plt.plot(epoch, testing20Accuracy, label="testingRes20")
 #plt.plot(epoch, training56Accuracy, label="training56")
-plt.plot(epoch, testing56Accuracy, label="testingRes56")
+plt.plot(epoch, testing56Accuracy, "r-", label="testingRes56")
 #plt.plot(epoch, training110Accuracy, label="training110")
-plt.plot(epoch, testing110Accuracy, label="testingRes110")
+plt.plot(epoch, testing110Accuracy, "g-", label="testingRes110")
 
 # CNN
 #plt.plot(epoch, trainingCNN20Accuracy, label="trainingCNN20")
 #plt.plot(epoch, testingCNN20Accuracy, label="testingCNN20")
 #plt.plot(epoch, trainingCNN56Accuracy, label="traingCNN56")
-plt.plot(epoch, testingCNN56Accuracy, label="testingCNN56")
+#plt.plot(epoch, testingCNN56Accuracy, label="testingCNN56")
 #plt.plot(epoch, trainingCNN110Accuracy, label="traingCNN110")
-plt.plot(epoch, testingCNN110Accuracy, label="testingCNN110")
+#plt.plot(epoch, testingCNN110Accuracy, label="testingCNN110")
 
 
-plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+plt.legend(bbox_to_anchor=(1.05, 1), loc=10, borderaxespad=0.)
 plt.show()
 
 
+'''
 plt.xlabel("Epoch")
-plt.ylabel("Accuracy")
+plt.ylabel("Training Loss")
 
 # Residual Loss
-#plt.plot(epoch, testing20Loss, label="testingRes20 Loss")
-#plt.plot(epoch, testing56Loss, label="testingRes56 Loss")
-#plt.plot(epoch, testing110Loss, label="testingRes110 Loss")
+plt.plot(epoch, training20Loss, label="trainingRes20 Loss")
+plt.plot(epoch, training56Loss, label="trainingRes56 Loss")
+plt.plot(epoch, training110Loss, label="trainingRes110 Loss")
 
 # CNN Loss
-#plt.plot(epoch, testingCNN20Loss, label="testingCNN20 Loss")
-plt.plot(epoch, testingCNN56Loss, label="testingCNN56 Loss")
-plt.plot(epoch, testingCNN110Loss, label="testingCNN110 Loss")
+plt.plot(epoch, trainingCNN20Loss, label="trainingCNN20 Loss")
+plt.plot(epoch, trainingCNN56Loss, label="trainingCNN56 Loss")
+plt.plot(epoch, trainingCNN110Loss, label="trainingCNN110 Loss")
 
 plt.legend(bbox_to_anchor=(1.05, 1), loc=1, borderaxespad=0.)
+font = {'family' : 'normal',
+        'weight' : 'bold',
+        'size'   : 14}
+
+plt.rc('font', **font)
 plt.show()
+
+'''
