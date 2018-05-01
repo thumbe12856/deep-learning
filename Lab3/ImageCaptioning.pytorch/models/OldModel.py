@@ -14,6 +14,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import *
 import misc.utils as utils
+import csv
+
 
 from .CaptionModel import CaptionModel
 
@@ -84,6 +86,8 @@ class OldModel(CaptionModel):
             output = F.log_softmax(self.logit(self.dropout(output)))
             outputs.append(output)
 
+	#print(outputs)
+	#raw_input('outputs')
         return torch.cat([_.unsqueeze(1) for _ in outputs], 1)
 
     def get_logprobs_state(self, it, tmp_fc_feats, tmp_att_feats, state):
@@ -172,6 +176,7 @@ class OldModel(CaptionModel):
                 seqLogprobs.append(sampleLogprobs.view(-1))
 
             output, state = self.core(xt, fc_feats, att_feats, state)
+	    print(output)
             logprobs = F.log_softmax(self.logit(self.dropout(output)))
 
         return torch.cat([_.unsqueeze(1) for _ in seq], 1), torch.cat([_.unsqueeze(1) for _ in seqLogprobs], 1)
@@ -188,6 +193,7 @@ class ShowAttendTellCore(nn.Module):
         self.fc_feat_size = opt.fc_feat_size
         self.att_feat_size = opt.att_feat_size
         self.att_hid_size = opt.att_hid_size
+	self.iiii = 0
         
         self.rnn = getattr(nn, self.rnn_type.upper())(self.input_encoding_size + self.att_feat_size, 
                 self.rnn_size, self.num_layers, bias=False, dropout=self.drop_prob_lm)
@@ -221,6 +227,24 @@ class ShowAttendTellCore(nn.Module):
             dot = att_h + att                                   # batch * att_size
         
         weight = F.softmax(dot)
+	print(weight.data.shape)
+	raw_input("data[0]")
+	
+	print("i:" + str(self.iiii))
+	f = open('./alpha' + str(self.iiii) + '.csv', 'w')
+	w = csv.writer(f)
+	writeData = [[]]
+	for i in range(weight.shape[0]):
+		writeCol = []
+		for j in weight.data[i]:
+			writeCol.append(j)
+		writeData.append(writeCol)
+	w.writerows(writeData)
+	f.close()
+
+	self.iiii = self.iiii + 1
+	raw_input("weight")
+	
         att_feats_ = att_feats.view(-1, att_size, self.att_feat_size) # batch * att_size * att_feat_size
         att_res = torch.bmm(weight.unsqueeze(1), att_feats_).squeeze(1) # batch * att_feat_size
 
