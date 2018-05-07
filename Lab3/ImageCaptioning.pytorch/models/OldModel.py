@@ -15,7 +15,7 @@ import torch.nn.functional as F
 from torch.autograd import *
 import misc.utils as utils
 import csv
-
+import inspect
 
 from .CaptionModel import CaptionModel
 
@@ -54,10 +54,14 @@ class OldModel(CaptionModel):
         else:
             return image_map
 
-    def forward(self, fc_feats, att_feats, seq):
+    def forward(self, fc_feats, att_feats, seq, save_weight=False):
+	print("Old forward")
         batch_size = fc_feats.size(0)
         state = self.init_hidden(fc_feats)
+	#print("opt sampling_save_weight:" + str(sampling_save_weight))
 
+	print("father forward:, seq size:" + str(seq.size(1)))
+	#raw_input('----------')
         outputs = []
 
         for i in range(seq.size(1) - 1):
@@ -82,7 +86,8 @@ class OldModel(CaptionModel):
 
             xt = self.embed(it)
 
-            output, state = self.core(xt, fc_feats, att_feats, state)
+	    # forward
+            output, state = self.core(xt, fc_feats, att_feats, state, save_weight)
             output = F.log_softmax(self.logit(self.dropout(output)))
             outputs.append(output)
 
@@ -94,12 +99,13 @@ class OldModel(CaptionModel):
         # 'it' is Variable contraining a word index
         xt = self.embed(it)
 
-        output, state = self.core(xt, tmp_fc_feats, tmp_att_feats, state)
+        output, state = self.core(xt, tmp_fc_feats, tmp_att_feats, state, True)
         logprobs = F.log_softmax(self.logit(self.dropout(output)))
 
         return logprobs, state
 
     def sample_beam(self, fc_feats, att_feats, opt={}):
+	save_weight = opt.get('save_weight')
         beam_size = opt.get('beam_size', 10)
         batch_size = fc_feats.size(0)
 
@@ -124,7 +130,9 @@ class OldModel(CaptionModel):
                     it = fc_feats.data.new(beam_size).long().zero_()
                     xt = self.embed(Variable(it, requires_grad=False))
 
-                output, state = self.core(xt, tmp_fc_feats, tmp_att_feats, state)
+		# forward
+		print("from sample beam, save weight: " + str(save_weight))
+                output, state = self.core(xt, tmp_fc_feats, tmp_att_feats, state, save_weight)
                 logprobs = F.log_softmax(self.logit(self.dropout(output)))
 
             self.done_beams[k] = self.beam_search(state, logprobs, tmp_fc_feats, tmp_att_feats, opt=opt)
@@ -137,15 +145,21 @@ class OldModel(CaptionModel):
         sample_max = opt.get('sample_max', 1)
         beam_size = opt.get('beam_size', 1)
         temperature = opt.get('temperature', 1.0)
+	save_weight = opt.get('save_weight')
+	print(save_weight)
+	#raw_input("save weight")
+
         if beam_size > 1:
             return self.sample_beam(fc_feats, att_feats, opt)
 
         batch_size = fc_feats.size(0)
         state = self.init_hidden(fc_feats)
+	#raw_input("start sample")
 
         seq = []
         seqLogprobs = []
         for t in range(self.seq_length + 1):
+	    print("t:" + str(t) + ", self.seq_len:" + str(self.seq_length))
             if t == 0: # input <bos>
                 it = fc_feats.data.new(batch_size).long().zero_()
             elif sample_max:
@@ -175,8 +189,10 @@ class OldModel(CaptionModel):
                 seq.append(it) #seq[t] the input of t+2 time step
                 seqLogprobs.append(sampleLogprobs.view(-1))
 
-            output, state = self.core(xt, fc_feats, att_feats, state)
-	    print(output)
+	    # forward
+	    #raw_input("from sample")
+            output, state = self.core(xt, fc_feats, att_feats, state, save_weight)
+	    #print(output)
             logprobs = F.log_softmax(self.logit(self.dropout(output)))
 
         return torch.cat([_.unsqueeze(1) for _ in seq], 1), torch.cat([_.unsqueeze(1) for _ in seqLogprobs], 1)
@@ -206,7 +222,7 @@ class ShowAttendTellCore(nn.Module):
             self.ctx2att = nn.Linear(self.att_feat_size, 1)
             self.h2att = nn.Linear(self.rnn_size, 1)
 
-    def forward(self, xt, fc_feats, att_feats, state):
+    def forward(self, xt, fc_feats, att_feats, state, save_weight=False):
         att_size = att_feats.numel() // att_feats.size(0) // self.att_feat_size
         att = att_feats.view(-1, self.att_feat_size)
         if self.att_hid_size > 0:
@@ -227,28 +243,38 @@ class ShowAttendTellCore(nn.Module):
             dot = att_h + att                                   # batch * att_size
         
         weight = F.softmax(dot)
+	
 	print(weight.data.shape)
-	raw_input("data[0]")
+	#raw_input("data[0]")
 	
-	print("i:" + str(self.iiii))
-	f = open('./alpha' + str(self.iiii) + '.csv', 'w')
-	w = csv.writer(f)
-	writeData = [[]]
-	for i in range(weight.shape[0]):
-		writeCol = []
-		for j in weight.data[i]:
-			writeCol.append(j)
-		writeData.append(writeCol)
-	w.writerows(writeData)
-	f.close()
+	print("save_weight:" + str(save_weight))
+	#raw_input("save_weight")
+	if(save_weight == True):
+		#raw_input("sampling_save_weight and opt.save_weiht are ture.")
 
-	self.iiii = self.iiii + 1
-	raw_input("weight")
-	
+		print("iiiii:" + str(self.iiii))
+		f = open('./data/alpha/showattendtell/alpha' + str(self.iiii) + '.csv', 'w')
+		w = csv.writer(f)
+		writeData = [[]]
+		for i in range(weight.shape[0]):
+			writeCol = []
+			for j in weight.data[i]:
+				writeCol.append(j)
+			writeData.append(writeCol)
+		w.writerows(writeData)
+		f.close()
+
+		self.iiii = self.iiii + 1
+	#raw_input("weight")
+
         att_feats_ = att_feats.view(-1, att_size, self.att_feat_size) # batch * att_size * att_feat_size
+	
+	# matrix mutiply
         att_res = torch.bmm(weight.unsqueeze(1), att_feats_).squeeze(1) # batch * att_feat_size
-
+	
+	# z: output
         output, state = self.rnn(torch.cat([xt, att_res], 1).unsqueeze(0), state)
+	#print(output)
         return output.squeeze(0), state
 
 class AllImgCore(nn.Module):
@@ -265,6 +291,7 @@ class AllImgCore(nn.Module):
                 self.rnn_size, self.num_layers, bias=False, dropout=self.drop_prob_lm)
 
     def forward(self, xt, fc_feats, att_feats, state):
+	print("rnn")
         output, state = self.rnn(torch.cat([xt, fc_feats], 1).unsqueeze(0), state)
         return output.squeeze(0), state
 

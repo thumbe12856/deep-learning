@@ -24,6 +24,7 @@ class CaptionModel(nn.Module):
         # args are the miscelleous inputs to the core in addition to embedded word and state
         # kwargs only accept opt
 
+
         def beam_step(logprobsf, beam_size, t, beam_seq, beam_seq_logprobs, beam_logprobs_sum, state):
             #INPUTS:
             #logprobsf: probabilities augmented after diversity
@@ -82,6 +83,8 @@ class CaptionModel(nn.Module):
         beam_seq_logprobs = torch.FloatTensor(self.seq_length, beam_size).zero_()
         beam_logprobs_sum = torch.zeros(beam_size) # running sum of logprobs for each beam
         done_beams = []
+        ori_done_beams = []
+        weight_index = []
 
         for t in range(self.seq_length):
             """pem a beam merge. that is,
@@ -103,22 +106,49 @@ class CaptionModel(nn.Module):
                                         beam_seq_logprobs,
                                         beam_logprobs_sum,
                                         state)
+            
+            # save alpha weight index
+            print(beam_seq)
+            for b in range(beam_size):
+                weight_index.append([beam_seq[t][b], t, b])
 
             for vix in range(beam_size):
                 # if time's up... or if end token is reached then copy beams
                 if beam_seq[t, vix] == 0 or t == self.seq_length - 1:
+                    #print("----vix:" + str(vix))
                     final_beam = {
                         'seq': beam_seq[:, vix].clone(), 
                         'logps': beam_seq_logprobs[:, vix].clone(),
                         'p': beam_logprobs_sum[vix]
                     }
                     done_beams.append(final_beam)
+                    ori_done_beams.append(final_beam)
+                    #print(done_beams[0]['seq'])
                     # don't continue beams from finished sequences
                     beam_logprobs_sum[vix] = -1000
+            
+            #print("-----t:" + str(t))
+            #raw_input("t and vix")
 
             # encode as vectors
             it = beam_seq[t]
             logprobs, state = self.get_logprobs_state(Variable(it.cuda()), *(args + (state,)))
 
         done_beams = sorted(done_beams, key=lambda x: -x['p'])[:beam_size]
+        
+        #print("d: %.16f" % (done_beams[0]['p']))
+        #print("o: %.16f" % (ori_done_beams[0]['p']))
+
+        # print(len(done_beams[0]['seq']))
+        # print(len(done_beams[0]['weight_index']))
+        # done_beams[0] stored the best result
+        final_weight_index = []
+        for s in done_beams[0]['seq']:
+            if(s != 0):
+                for i in range(len(weight_index)):
+                    if(weight_index[i][0] == s):
+                        final_weight_index.append(weight_index[i][1:])
+                        break
+
+        print(final_weight_index)
         return done_beams

@@ -20,6 +20,10 @@ import torch
 
 # Input arguments and options
 parser = argparse.ArgumentParser()
+
+# Save weight
+parser.add_argument('--save_weight', type=bool, default=False,
+                    help='the function is to see the attention pictures with word when evaluating.')
 # Input paths
 parser.add_argument('--model', type=str, default='',
                 help='path to model to evaluate')
@@ -72,7 +76,9 @@ parser.add_argument('--id', type=str, default='',
 
 opt = parser.parse_args()
 
+
 # Load infos
+print(opt.infos_path)
 with open(opt.infos_path) as f:
     infos = cPickle.load(f)
 
@@ -87,7 +93,7 @@ if opt.batch_size == 0:
     opt.batch_size = infos['opt'].batch_size
 if len(opt.id) == 0:
     opt.id = infos['opt'].id
-ignore = ["id", "batch_size", "beam_size", "start_from", "language_eval"]
+ignore = ["id", "batch_size", "beam_size", "start_from", "language_eval", "save_weight"]
 for k in vars(infos['opt']).keys():
     if k not in ignore:
         if k in vars(opt):
@@ -98,6 +104,7 @@ for k in vars(infos['opt']).keys():
 vocab = infos['vocab'] # ix -> word mapping
 
 # Setup the model
+print(opt)
 model = models.setup(opt)
 model.load_state_dict(torch.load(opt.model))
 model.cuda()
@@ -118,8 +125,7 @@ loader.ix_to_word = infos['vocab']
 
 
 # Set sample options
-loss, split_predictions, lang_stats = eval_utils.eval_split(model, crit, loader, 
-    vars(opt))
+loss, split_predictions, lang_stats = eval_utils.eval_split(model, crit, loader, vars(opt))
 
 print('loss: ', loss)
 if lang_stats:

@@ -154,7 +154,7 @@ class AttModel(CaptionModel):
         temperature = opt.get('temperature', 1.0)
         if beam_size > 1:
             return self.sample_beam(fc_feats, att_feats, opt)
-
+	#raw_input("topdown sample")
         batch_size = fc_feats.size(0)
         state = self.init_hidden(batch_size)
 
@@ -185,6 +185,7 @@ class AttModel(CaptionModel):
                 sampleLogprobs = logprobs.gather(1, Variable(it, requires_grad=False)) # gather the logprobs at sampled positions
                 it = it.view(-1).long() # and flatten indices for downstream processing
 
+	    print(it)
             xt = self.embed(Variable(it, requires_grad=False))
 
             if t >= 1:
@@ -396,6 +397,7 @@ class Attention(nn.Module):
         super(Attention, self).__init__()
         self.rnn_size = opt.rnn_size
         self.att_hid_size = opt.att_hid_size
+	self.iiii = 0
 
         self.h2att = nn.Linear(self.rnn_size, self.att_hid_size)
         self.alpha_net = nn.Linear(self.att_hid_size, 1)
@@ -414,6 +416,10 @@ class Attention(nn.Module):
         dot = dot.view(-1, att_size)                        # batch * att_size
         
         weight = F.softmax(dot)                             # batch * att_size
+	#print(weight.data.shape)
+	#print(h)
+	#self.iiii = self.iiii + 1
+	#print(weight.shape)
         att_feats_ = att_feats.view(-1, att_size, self.rnn_size) # batch * att_size * att_feat_size
         att_res = torch.bmm(weight.unsqueeze(1), att_feats_).squeeze(1) # batch * att_feat_size
 

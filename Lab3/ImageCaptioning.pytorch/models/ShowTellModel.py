@@ -74,9 +74,10 @@ class ShowTellModel(CaptionModel):
                 if i >= 2 and seq[:, i-1].data.sum() == 0:
                     break
                 xt = self.embed(it)
-
+	    
             output, state = self.core(xt.unsqueeze(0), state)
             output = F.log_softmax(self.logit(self.dropout(output.squeeze(0))))
+	    print(output.shape)
             outputs.append(output)
 
         return torch.cat([_.unsqueeze(1) for _ in outputs[1:]], 1).contiguous()
@@ -129,14 +130,17 @@ class ShowTellModel(CaptionModel):
         state = self.init_hidden(batch_size)
         seq = []
         seqLogprobs = []
+	print(self.seq_length)
         for t in range(self.seq_length + 2):
             if t == 0:
                 xt = self.img_embed(fc_feats)
             else:
                 if t == 1: # input <bos>
                     it = fc_feats.data.new(batch_size).long().zero_()
+		    print(it)
                 elif sample_max:
                     sampleLogprobs, it = torch.max(logprobs.data, 1)
+		    print(it)
                     it = it.view(-1).long()
                 else:
                     if temperature == 1.0:
@@ -147,8 +151,15 @@ class ShowTellModel(CaptionModel):
                     it = torch.multinomial(prob_prev, 1).cuda()
                     sampleLogprobs = logprobs.gather(1, Variable(it, requires_grad=False)) # gather the logprobs at sampled positions
                     it = it.view(-1).long() # and flatten indices for downstream processing
-
+		
                 xt = self.embed(Variable(it, requires_grad=False))
+		'''
+		print("it:")
+		print(it)	
+		print("xt:")
+		print(xt)
+		raw_input("--")
+		'''
 
             if t >= 2:
                 # stop when all finished
@@ -158,11 +169,19 @@ class ShowTellModel(CaptionModel):
                     unfinished = unfinished * (it > 0)
                 if unfinished.sum() == 0:
                     break
+		print('it;')
+		#print(it)
+		print('it u:')
+		#print(unfinished.type_as(it))
                 it = it * unfinished.type_as(it)
                 seq.append(it) #seq[t] the input of t+2 time step
                 seqLogprobs.append(sampleLogprobs.view(-1))
 
             output, state = self.core(xt.unsqueeze(0), state)
             logprobs = F.log_softmax(self.logit(self.dropout(output.squeeze(0))))
+	    
+	temp = torch.cat([_.unsqueeze(1) for _ in seqLogprobs], 1)
+	print(temp)
+	raw_input("--")
 
         return torch.cat([_.unsqueeze(1) for _ in seq], 1), torch.cat([_.unsqueeze(1) for _ in seqLogprobs], 1)

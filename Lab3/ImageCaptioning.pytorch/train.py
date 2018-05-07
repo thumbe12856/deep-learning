@@ -110,7 +110,38 @@ def train(opt):
         fc_feats, att_feats, labels, masks = tmp
         
         optimizer.zero_grad()
-        loss = crit(model(fc_feats, att_feats, labels), labels[:,1:], masks[:,1:])
+
+	
+
+
+	'''	
+	# model.forward
+	aaa = model(fc_feats, att_feats, labels)
+	#print(aaa)
+	#raw_input('-----')
+	#print(aaa.size())
+	#raw_input('-----')
+	
+	aaa = aaa.contiguous().view(-1, aaa.size(2))
+	target = labels[:, 1:].contiguous().view(-1, 1)
+	mask = masks[:, 1:].contiguous().view(-1, 1)
+	output = - aaa.gather(1, target) * mask
+	#print(output)
+	#raw_input('-----')
+	'''
+
+	'''
+	if(opt.save_weight == False):
+		print("save weight false.")
+	else:
+		print("save weight true.")
+	'''
+
+	print("forward-----------------------------")
+	# model.forward
+	print(labels.shape)
+        loss = crit(model(fc_feats, att_feats, labels, False), labels[:,1:], masks[:,1:])
+	print("forward end-----------------------------")
         loss.backward()
         utils.clip_gradient(optimizer, opt.grad_clip)
         optimizer.step()
@@ -142,17 +173,20 @@ def train(opt):
         if (iteration % opt.save_checkpoint_every == 0):
             # eval model
             eval_kwargs = {'split': 'val',
+			   'save_weight': False,
                             'dataset': opt.input_json}
             eval_kwargs.update(vars(opt))
+	    print('eval')
             val_loss, predictions, lang_stats = eval_utils.eval_split(model, crit, loader, eval_kwargs)
+	    #raw_input('eval end')
 
             # Write validation result into summary
             if tf is not None:
                 add_summary_value(tf_summary_writer, 'validation loss', val_loss, iteration)
-                for k,v in lang_stats.items():
-                    add_summary_value(tf_summary_writer, k, v, iteration)
+                #for k,v in lang_stats.items():
+                    #add_summary_value(tf_summary_writer, k, v, iteration)
                 tf_summary_writer.flush()
-            val_result_history[iteration] = {'loss': val_loss, 'lang_stats': lang_stats, 'predictions': predictions}
+            val_result_history[iteration] = {'loss': val_loss, 'nang_stats': lang_stats, 'predictions': predictions}
 
             # Save model if is improving on validation result
             if opt.language_eval == 1:

@@ -3,6 +3,8 @@ import argparse
 def parse_opt():
     parser = argparse.ArgumentParser()
     # Data input settings
+    parser.add_argument('--save_weight', type=bool, default=False,
+                    help='the function is to see the attention pictures with word when evaluating.')
     parser.add_argument('--input_json', type=str, default='data/coco.json',
                     help='path to the json file containing additional info and vocab')
     parser.add_argument('--input_fc_dir', type=str, default='data/cocotalk_fc',
@@ -40,7 +42,7 @@ def parse_opt():
     # Optimization: General
     parser.add_argument('--max_epochs', type=int, default=-1,
                     help='number of epochs')
-    parser.add_argument('--batch_size', type=int, default=16,
+    parser.add_argument('--batch_size', type=int, default=10,
                     help='minibatch size')
     parser.add_argument('--grad_clip', type=float, default=0.1, #5.,
                     help='clip gradients at this value')
@@ -101,7 +103,10 @@ def parse_opt():
     parser.add_argument('--train_only', type=int, default=0,
                     help='if true then use 80k, else use 110k')
 
+    print("here3")
     args = parser.parse_args()
+    print("here4")
+
 
     # Check if args are valid
     assert args.rnn_size > 0, "rnn_size should be greater than 0"
