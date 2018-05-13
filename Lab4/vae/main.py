@@ -26,6 +26,7 @@ args.cuda = not args.no_cuda and torch.cuda.is_available()
 torch.manual_seed(args.seed)
 
 device = torch.device("cuda" if args.cuda else "cpu")
+#device = torch.cuda.current_device()
 
 kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
 train_loader = torch.utils.data.DataLoader(
@@ -75,7 +76,8 @@ optimizer = optim.Adam(model.parameters(), lr=1e-3)
 
 # Reconstruction + KL divergence losses summed over all elements and batch
 def loss_function(recon_x, x, mu, logvar):
-    BCE = F.binary_cross_entropy(recon_x, x.view(-1, 784), size_average=False)
+    #BCE = F.binary_cross_entropy(recon_x, x.view(-1, 784), size_average=False)
+    BCE = F.mse_loss(recon_x, x.view(-1, 784), size_average=False)
 
     # see Appendix B from VAE paper:
     # Kingma and Welling. Auto-Encoding Variational Bayes. ICLR, 2014
@@ -120,7 +122,7 @@ def test(epoch):
                 comparison = torch.cat([data[:n],
                                       recon_batch.view(args.batch_size, 1, 28, 28)[:n]])
                 save_image(comparison.cpu(),
-                         'results/reconstruction_' + str(epoch) + '.png', nrow=n)
+                         'results/ori/reconstruction_' + str(epoch) + '.png', nrow=n)
 
     test_loss /= len(test_loader.dataset)
     print('====> Test set loss: {:.4f}'.format(test_loss))
@@ -133,4 +135,4 @@ for epoch in range(1, args.epochs + 1):
         sample = torch.randn(64, 20).to(device)
         sample = model.decode(sample).cpu()
         save_image(sample.view(64, 1, 28, 28),
-                   'results/sample_' + str(epoch) + '.png')
+                   'results/ori/sample_' + str(epoch) + '.png')
