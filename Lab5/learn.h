@@ -123,27 +123,34 @@ public:
 			 * move.before_state() = S(t)
 			 */
 			state& move = path.back();
-			//std::cerr << "move " << move << std::endl;
-			//std::cerr << "S(t+1) " << move.before_state() << std::endl;
 
 			/**
 			 * before_movemove.after_state() = S(t)
 			 * before_move.before_state() = S(t - 1)
 			 */			
 			state& before_move = *(path.end()-2);
-			//std::cerr << "before move " << before_move << std::endl;
-			//std::cerr << "S(t) " << before_move.before_state() << std::endl;
 			
 			/**
+			 * after state:
 			 * r(t+1) + V(S'(t+1)) - V(S'(t))
 			 */
-			//float error = exact - (move.value() - move.reward());
-			float errorr = move.reward() + exact - before_move.value();
-			//std::cerr << "move.value(): " << move.value() << ", move.reward():" << move.reward() << std::endl;
-			//std::cin.get();
-			
+			//float errorr = move.reward() + exact - move.value();
+
 			/**
+			 * 
 			 * V(S'(t)) = V(S'(t)) + alpha * error
+			 */
+			//exact = move.reward() + update(move.after_state(), alpha * errorr);
+
+
+			/**
+			 * state:
+			 * r(t+1) + V(S(t+1)) - V(S(t))
+			 */
+			float errorr = move.reward() + exact - before_move.value();
+
+			/**
+			 * V(S(t)) = V(S(t)) + alpha * error
 			 */
 			exact = move.reward() + update(before_move.after_state(), alpha * errorr);
 		}
