@@ -75,7 +75,7 @@ int main(int argc, const char* argv[]) {
 	path.reserve(20000);
 
 	std::ofstream recordFile;
-	recordFile.open("T-state.csv");
+	recordFile.open("./result/T-state.csv");
 
 	recordFile << "mean,sum,64,128,256,512,1024,2048,4096,8192,16384";
 

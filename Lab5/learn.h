@@ -29,7 +29,7 @@ public:
 	 * accumulate the total value of given state
 	 */
 	float estimate(const board& b) const {
-		debug << "123. estimate " << std::endl << b;
+		debug << "estimate " << std::endl << b;
 		float value = 0;
 		for (feature* feat : feats) {
 
@@ -73,8 +73,8 @@ public:
 
 		for (state* move = after; move != after + 4; move++) {
 			if (move->assign(b)) {
-				//e = move->reward() + estimate(move->after_state());
-				e = move->reward() + estimate(move->before_state());
+				e = move->reward() + estimate(move->after_state());
+				//e = move->reward() + estimate(move->before_state());
 				//debug << "estimate: " << e << std::endl;
 				move->set_value(e);
 
@@ -110,32 +110,42 @@ public:
 	void update_episode(std::vector<state>& path, float alpha = 0.1) const {
 		
 		// V(terminal state) = 0
+		// V(S(t+1))
 		float exact = 0;
-		
-		for (path.pop_back() /* terminal state */; path.size(); path.pop_back()) {
-			state& move = path.back();
-			
-			// r + V(S(t)'') - V(S(t))
-			float error = exact - (move.value() - move.reward());
-			/*
-			std::cerr << "11111111111111111111111111111111111111111111111111111111111111111";
-			std::cin.get();
-			*/
 
-			//std::cerr << "update error = " << error << " for after state" << std::endl << move.after_state();
-			/*
-			std::cerr << "22222222222222222222222222222222222222222222222222222222222222222";
-			std::cin.get(); 
-			*/
+		for (path.pop_back() /* terminal state */; path.size(); path.pop_back()) {
+			if(path.size() <= 1) {
+				break;
+			}
+
+			/**
+			 * move.after_state() = S(t + 1)
+			 * move.before_state() = S(t)
+			 */
+			state& move = path.back();
+			//std::cerr << "move " << move << std::endl;
+			//std::cerr << "S(t+1) " << move.before_state() << std::endl;
+
+			/**
+			 * before_movemove.after_state() = S(t)
+			 * before_move.before_state() = S(t - 1)
+			 */			
+			state& before_move = *(path.end()-2);
+			//std::cerr << "before move " << before_move << std::endl;
+			//std::cerr << "S(t) " << before_move.before_state() << std::endl;
 			
-			//exact = move.reward() + update(move.after_state(), alpha * error);
-			exact = move.reward() + update(move.before_state(), alpha * error);
-			//update(move.after_state(), alpha * error);
-			//exact = move.value() + alpha * error;
-			/*
-			std::cerr << "33333333333333333333333333333333333333333333333333333333333333333";
-			std::cin.get(); 
-			*/
+			/**
+			 * r(t+1) + V(S'(t+1)) - V(S'(t))
+			 */
+			//float error = exact - (move.value() - move.reward());
+			float errorr = move.reward() + exact - before_move.value();
+			//std::cerr << "move.value(): " << move.value() << ", move.reward():" << move.reward() << std::endl;
+			//std::cin.get();
+			
+			/**
+			 * V(S'(t)) = V(S'(t)) + alpha * error
+			 */
+			exact = move.reward() + update(before_move.after_state(), alpha * errorr);
 		}
 	}
 
@@ -184,20 +194,25 @@ public:
 			info << "\t" "mean = " << mean;
 			info << "\t" "max = " << max;
 
-			info << std::endl;
-			for (int t = 1, c = 0; c < unit; c += stat[t++]) {
-				if (stat[t] == 0) continue;
-				int accu = std::accumulate(stat + t, stat + 16, 0);
-				info << "\t" << ((1 << t) & -2u) << "\t" << (accu * coef) << "%";
-				info << "\t(" << (stat[t] * coef) << "%)" << std::endl;
-			}
+			int terminalTile[10] = {32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384};
+            float tileIndex[10] ={ 100,  0,   0,   0,   0,    0,    0,    0,    0,     0};
 
-			recordFile << "\n" << mean << "," << max << ",";
-			for (int t = 1, c = 0; c < unit; c += stat[t++]) {
-				if (stat[t] == 0) continue;
-				int accu = std::accumulate(stat + t, stat + 16, 0);
-				recordFile << (accu * coef) << ",";
-			}
+            for (int t = 1, c = 0; c < unit; c += stat[t++]) {
+                if (stat[t] == 0) continue;
+                int accu = std::accumulate(stat + t, stat + 16, 0);
+                info << "\t" << ((1 << t) & -2u) << "\t" << (accu * coef) << "%";
+                info << "\t(" << (stat[t] * coef) << "%)" << std::endl;
+                for(int i=0; i<9; i++) {
+                    if(terminalTile[i] == ((1 << t) & -2u)) {
+                            tileIndex[i] = (accu * coef);
+                    }
+				}
+            }
+
+            recordFile << "\n" << mean << "," << max << ",";
+            for(int i = 0; i < 9; i++) {
+                recordFile << tileIndex[i] << ",";
+            }
 
 			scores.clear();
 			maxtile.clear();
