@@ -32,10 +32,10 @@
  * output streams
  * to enable debugging (more output), just change the line to 'std::ostream& debug = std::cout;'
  */
-std::ostream& info = std::cout;
-std::ostream& error = std::cerr;
-//std::ostream& debug = *(new std::ofstream);
-std::ostream& debug = std::cerr;
+std::ostream& info = *(new std::ofstream);
+std::ostream& error = *(new std::ofstream);
+std::ostream& debug = *(new std::ofstream);
+//std::ostream& debug = std::cerr;
 
 #include "board.h"
 #include "feature.h"
@@ -59,6 +59,8 @@ int main(int argc, const char* argv[]) {
 
 	// initialize the features
 	// pattern({index})
+	// 1 個 board 有 4 個 features 組成
+	// 1 個 feature  有 8 個 isomorphic 組成 (旋轉、垂直翻轉)
 	tdl.add_feature(new pattern({ 0, 1, 2, 3, 4, 5 }));
 	tdl.add_feature(new pattern({ 4, 5, 6, 7, 8, 9 }));
 	tdl.add_feature(new pattern({ 0, 1, 2, 4, 5, 6 }));
@@ -70,7 +72,12 @@ int main(int argc, const char* argv[]) {
 	// train the model
 	std::vector<state> path;
 	path.reserve(20000);
-	
+
+	std::ofstream recordFile;
+	recordFile.open("T-state.csv");
+
+	recordFile << "mean, sum, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384";
+
 	for (size_t n = 1; n <= total; n++) {
 		board b;
 		int score = 0;
@@ -80,7 +87,7 @@ int main(int argc, const char* argv[]) {
 		b.init();
 		while (true) {
 			debug << "state" << std::endl << b;
-			state best = tdl.select_best_move(b);
+			state best = tdl.select_best_move(b, n);
 			path.push_back(best);
 
 			if (best.is_valid()) {
@@ -100,12 +107,19 @@ int main(int argc, const char* argv[]) {
 
 		// update by TD(0)
 		tdl.update_episode(path, alpha);
-		tdl.make_statistic(n, b, score);
+		tdl.make_statistic(n, recordFile, b, score);
 		path.clear();
+
+		/*
+		if(n > 20) {
+			recordFile.close();
+		}
+		*/
 	}
 
+	recordFile.close();
 	// store the model into file
-	tdl.save("");
+	tdl.save("model");
 
 	return 0;
 }

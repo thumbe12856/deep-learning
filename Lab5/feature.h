@@ -1,5 +1,3 @@
-
-
 /**
  * feature and weight table for temporal difference learning
  */
@@ -17,6 +15,9 @@ public:
 
 public: // should be implemented
 
+	/**
+	 * 繼承者(pattern)都要實作這些functions
+	 */
 	/**
 	 * estimate the value of a given board
 	 */

@@ -59,10 +59,13 @@ public:
 	 */
 	virtual float estimate(const board& b) const {
 		float value = 0;
+
 		for (int i = 0; i < iso_last; i++) {
 			size_t index = indexof(isomorphic[i], b);
 			value += operator[](index);
 		}
+
+
 		return value;
 	}
 
@@ -74,7 +77,7 @@ public:
 		float value = 0;
 		for (int i = 0; i < iso_last; i++) {
 			size_t index = indexof(isomorphic[i], b);
-			
+
 			// real update
 			operator[](index) += u_split;
 			value += operator[](index);
