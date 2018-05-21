@@ -32,9 +32,10 @@
  * output streams
  * to enable debugging (more output), just change the line to 'std::ostream& debug = std::cout;'
  */
-std::ostream& info = *(new std::ofstream);
-std::ostream& error = *(new std::ofstream);
+std::ostream& info = std::cout;
+std::ostream& error = std::cerr;
 std::ostream& debug = *(new std::ofstream);
+
 //std::ostream& debug = std::cerr;
 
 #include "board.h"
