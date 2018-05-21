@@ -50,7 +50,7 @@ int main(int argc, const char* argv[]) {
 
 	// set the learning parameters
 	float alpha = 0.1;
-	size_t total = 1000;
+	size_t total = 100000;
 	unsigned seed;
 	__asm__ __volatile__ ("rdtsc" : "=a" (seed));
 	info << "alpha = " << alpha << std::endl;
@@ -77,14 +77,14 @@ int main(int argc, const char* argv[]) {
 	std::ofstream recordFile;
 	recordFile.open("T-state.csv");
 
-	recordFile << "mean, sum, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384";
+	recordFile << "mean,sum,64,128,256,512,1024,2048,4096,8192,16384";
 
 	for (size_t n = 1; n <= total; n++) {
 		board b;
 		int score = 0;
 
 		// play an episode
-		debug << "begin episode" << std::endl;
+		//error << "begin episode" << n << std::endl;
 		b.init();
 		while (true) {
 			debug << "state" << std::endl << b;
@@ -104,18 +104,12 @@ int main(int argc, const char* argv[]) {
 				break;
 			}
 		}
-		debug << "end episode" << std::endl;
+		//error << "end episode " << n << std::endl;
 
 		// update by TD(0)
 		tdl.update_episode(path, alpha);
 		tdl.make_statistic(n, recordFile, b, score);
 		path.clear();
-
-		/*
-		if(n > 20) {
-			recordFile.close();
-		}
-		*/
 	}
 
 	recordFile.close();

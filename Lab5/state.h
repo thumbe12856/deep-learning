@@ -43,7 +43,7 @@ public:
 	 * return true if the action is valid for the given state
 	 */
 	bool assign(const board& b) {
-		debug << "assign " << name() << std::endl << b;
+		//debug << "assign " << name() << std::endl << b;
 		after = before = b;
 		score = after.move(opcode);
 		esti = score;

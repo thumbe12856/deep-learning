@@ -43,7 +43,6 @@ public:
 	 * update the value of given state and return its new value
 	 */
 	float update(const board& b, float u) const {
-		error << "update " << " (" << u << "), feats.size:" << feats.size() << std::endl << b;
 		float u_split = u / feats.size();
 		float value = 0;
 		for (feature* feat : feats) {
@@ -51,7 +50,6 @@ public:
 			// in pattern.h
 			value += feat->update(b, u_split);
 		}
-		error << value << std::endl;
 		return value;
 	}
 
@@ -75,9 +73,10 @@ public:
 
 		for (state* move = after; move != after + 4; move++) {
 			if (move->assign(b)) {
-				e = estimate(move->after_state());
-				debug << "estimate: " << e << std::endl;
-				move->set_value(move->reward() + estimate(move->after_state()));
+				//e = move->reward() + estimate(move->after_state());
+				e = move->reward() + estimate(move->before_state());
+				//debug << "estimate: " << e << std::endl;
+				move->set_value(e);
 
 				if (move->value() > best->value()) {
 					best = move;
@@ -86,11 +85,10 @@ public:
 				move->set_value(-std::numeric_limits<float>::max());
 			}
 
-			debug << "test " << *move;
+			//debug << "test " << *move;
+			//debug << "test before state" << std::endl << move->before_state();
+			//debug << "test after state" << std::endl << move->after_state();
 			debug << "epoch " << epoch;
-			if(epoch > 1000) {
-				std::cin.get();
-			}
 		}
 		return *best;
 	}
@@ -124,13 +122,14 @@ public:
 			std::cin.get();
 			*/
 
-			std::cerr << "update error = " << error << " for after state" << std::endl << move.after_state();
+			//std::cerr << "update error = " << error << " for after state" << std::endl << move.after_state();
 			/*
 			std::cerr << "22222222222222222222222222222222222222222222222222222222222222222";
 			std::cin.get(); 
 			*/
 			
-			exact = move.reward() + update(move.after_state(), alpha * error);
+			//exact = move.reward() + update(move.after_state(), alpha * error);
+			exact = move.reward() + update(move.before_state(), alpha * error);
 			//update(move.after_state(), alpha * error);
 			//exact = move.value() + alpha * error;
 			/*
@@ -159,7 +158,7 @@ public:
 	 *  '93.7%': 93.7% (937 games) reached 8192-tiles in last 1000 games (a.k.a. win rate of 8192-tile)
 	 *  '22.4%': 22.4% (224 games) terminated with 8192-tiles (the largest) in last 1000 games
 	 */
-	void make_statistic(size_t n, std::ofstream& recordFile, const board& b, int score, int unit = 10) {
+	void make_statistic(size_t n, std::ofstream& recordFile, const board& b, int score, int unit = 1000) {
 		scores.push_back(score);
 		maxtile.push_back(0);
 		for (int i = 0; i < 16; i++) {
