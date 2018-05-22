@@ -75,9 +75,9 @@ int main(int argc, const char* argv[]) {
 	path.reserve(20000);
 
 	std::ofstream recordFile;
-	recordFile.open("./result/T-state.csv");
+	recordFile.open("./result/T-state-new.csv");
 
-	recordFile << "mean,sum,64,128,256,512,1024,2048,4096,8192,16384";
+	recordFile << "mean,sum,32,64,128,256,512,1024,2048,4096,8192,16384,";
 
 	for (size_t n = 1; n <= total; n++) {
 		board b;
