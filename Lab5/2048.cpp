@@ -114,7 +114,7 @@ int main(int argc, const char* argv[]) {
 
 	recordFile.close();
 	// store the model into file
-	tdl.save("model");
+	tdl.save("state");
 
 	return 0;
 }

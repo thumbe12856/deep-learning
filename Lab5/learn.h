@@ -209,7 +209,7 @@ public:
                 int accu = std::accumulate(stat + t, stat + 16, 0);
                 info << "\t" << ((1 << t) & -2u) << "\t" << (accu * coef) << "%";
                 info << "\t(" << (stat[t] * coef) << "%)" << std::endl;
-                for(int i=0; i<9; i++) {
+                for(int i=0; i<10; i++) {
                     if(terminalTile[i] == ((1 << t) & -2u)) {
                             tileIndex[i] = (accu * coef);
                     }
@@ -217,7 +217,7 @@ public:
             }
 
             recordFile << "\n" << mean << "," << max << ",";
-            for(int i = 0; i < 9; i++) {
+            for(int i = 0; i < 10; i++) {
                 recordFile << tileIndex[i] << ",";
             }
 
