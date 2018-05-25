@@ -107,14 +107,14 @@ int main(int argc, const char* argv[]) {
 		//error << "end episode " << n << std::endl;
 
 		// update by TD(0)
-		tdl.update_episode(path, alpha);
+		tdl.update_episode(n, path, alpha);
 		tdl.make_statistic(n, recordFile, b, score);
 		path.clear();
 	}
 
 	recordFile.close();
 	// store the model into file
-	tdl.save("state");
+	// tdl.save("./model/state");
 
 	return 0;
 }

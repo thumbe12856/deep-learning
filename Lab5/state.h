@@ -5,8 +5,10 @@ class state {
 public:
 	state(int opcode = -1)
 		: opcode(opcode), score(-1), esti(-std::numeric_limits<float>::max()) {}
+		//: opcode(opcode), score(-1), esti(-10000000) {}
 	state(const board& b, int opcode = -1)
 		: opcode(opcode), score(-1), esti(-std::numeric_limits<float>::max()) { assign(b); }
+		//: opcode(opcode), score(-1), esti(-10000000) { assign(b); }
 	state(const state& st) = default;
 	state& operator =(const state& st) = default;
 

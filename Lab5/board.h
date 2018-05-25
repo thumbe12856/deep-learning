@@ -145,6 +145,23 @@ public:
 			set(space[rand() % num], rand() % 10 ? 1 : 2);
 	}
 
+	int* finadAllPopup(int *space) {
+		int num = 0;
+		for (int i = 0; i < 16; i++)
+			if (at(i) == 0) {
+				space[num++] = i;
+			}
+			space[16] = num;
+		return space;
+		/*
+		if (num) {
+			for(int i=0; i<num; i++) {
+				set(space[i], rand() % 10 ? 1 : 2);
+			}
+		}
+		*/
+	}
+
 	/**
 	 * apply an action to the board
 	 * return the reward gained by the action, or -1 if the action is illegal

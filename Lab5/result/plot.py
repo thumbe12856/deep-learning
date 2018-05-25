@@ -2,10 +2,10 @@ import pandas as pd
 import csv
 import matplotlib.pyplot as plt
 
-state_datas = pd.read_csv('T-state.csv')
+state_datas = pd.read_csv('T-state-new.csv')
 state_datas.fillna(0, inplace=True)
 
-after_state_datas = pd.read_csv('T-after-state.csv')
+after_state_datas = pd.read_csv('T-after-state-new.csv')
 after_state_datas.fillna(0, inplace=True)
 
 def plotFunction(column):
@@ -16,6 +16,6 @@ def plotFunction(column):
         plt.legend(prop={'size': 16})
         plt.show()
 
-column = ['mean', 'sum', '2048']
+column = ['mean', 'sum', '2048', '4096']
 for c in column:
         plotFunction(c)

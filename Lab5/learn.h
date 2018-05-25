@@ -69,14 +69,48 @@ class learning {
             state after[4] = { 0, 1, 2, 3 }; // up, right, down, left
             //std::cin.get(); 
             state* best = after;
-            float e = 0;
 
             for (state* move = after; move != after + 4; move++) {
                 if (move->assign(b)) {
-                    e = move->reward() + estimate(move->after_state());
-                    //e = move->reward() + estimate(move->before_state());
-                    //debug << "estimate: " << e << std::endl;
-                    move->set_value(e);
+                    /**
+                     after state
+                     * V(S(t)') = R(t+1) + V(S(t)') = estimate(move.after_state()) + move.reward()
+                    */
+                    // e = move->reward() + estimate(move->after_state());
+                    // move->set_value(e);
+
+                    /**
+                     state
+                     * V(S(t)) = R(t+1) + V(S(t+1)) = move.reward() + estimate(move.after_state().popup()) 
+                    */
+                    board tempB = move->after_state();
+                    int space[17];
+                    float e = 0;
+                    tempB.finadAllPopup(space);
+                    int sum = space[16];
+                    // error << "sum:" << space[16] << std::endl;
+                    // error << "original borad:" << std::endl << tempB << std::endl;
+                    for(int i = 0; i < sum; i++) {
+                        board tempB1 = move->after_state();
+                        tempB1.set(space[i], 1);
+                        // error << "set borad1:" << std::endl  << tempB1 << std::endl;
+                        // std::cin.get();
+                        e += estimate(tempB1);
+
+                        board tempB2 = move->after_state();
+                        tempB2.set(space[i], 2);
+                        // error << "set borad2:" << std::endl  << tempB2 << std::endl;
+                        // std::cin.get();
+                        e += estimate(tempB2);
+                    }
+
+                    /*  
+                    if(epoch > 10) {
+                        error << "e:" << e << std::endl;
+                        std::cin.get();
+                    }
+                    */
+                    move->set_value(move->reward() + e / sum);
 
                     if (move->value() > best->value()) {
                         best = move;
@@ -84,11 +118,8 @@ class learning {
                 } else {
                     move->set_value(-std::numeric_limits<float>::max());
                 }
-
-                //debug << "test " << *move;
-                //debug << "test before state" << std::endl << move->before_state();
-                //debug << "test after state" << std::endl << move->after_state();
-                debug << "epoch " << epoch;
+                //error << "move->value():" << move->value() << std::endl;
+                //std::cin.get();
             }
             return *best;
         }
@@ -107,52 +138,59 @@ class learning {
          *  { (s0,s0',a0,r0), (s1,s1',a1,r1), (s2,s2,x,-1) }
          *  where (x,x,x,x) means (before state, after state, action, reward)
          */
-        void update_episode(std::vector<state>& path, float alpha = 0.1) const {
+        void update_episode( int epoch, std::vector<state>& path, float alpha = 0.1) const {
 
-            // V(terminal state) = 0
-            // V(S(t+1))
+            /**
+             * V(terminal state) = 0
+             * terminal state = (path.size()-1).after_state().popup()
+             */
             float exact = 0;
 
             for (path.pop_back() /* terminal state */; path.size(); path.pop_back()) {
-                if(path.size() <= 1) {
-                    break;
-                }
 
                 /**
-                 * move.after_state() = S(t + 1)
+                 * move = S(t)
+                 * V(S(t)') = after state = estimate(move.after_state()) + move.reward()
+                 * V(S(t+1)) = state = estimate(move.after_state().popup()) + move.reward()
+                 * R(t+1) = move.reward()
+                 */
+
+                /**
+                 * move.after_state() = S(t)'
                  * move.before_state() = S(t)
                  */
                 state& move = path.back();
 
                 /**
-                 * before_movemove.after_state() = S(t)
-                 * before_move.before_state() = S(t - 1)
-                 */			
-                state& before_move = *(path.end()-2);
-
-                /**
                  * after state:
-                 * r(t+1) + V(S'(t+1)) - V(S'(t))
+                 * R(t+1) + V(S(t+1)') - V(S(t)')
                  */
-                //float errorr = move.reward() + exact - move.value();
+                // float errorr = move.reward() + exact - move.value();
 
                 /**
                  * 
-                 * V(S'(t)) = V(S'(t)) + alpha * error
+                 * V(S(t)') = V(S(t)') + alpha * error
                  */
-                //exact = move.reward() + update(move.after_state(), alpha * errorr);
+                // exact = move.reward() + update(move.after_state(), alpha * errorr);
 
 
                 /**
                  * state:
-                 * r(t+1) + V(S(t+1)) - V(S(t))
+                 * R(t+1) + V(S(t+1)) - V(S(t))
                  */
-                float errorr = move.reward() + exact - before_move.value();
+                float errorr = move.reward() + exact - move.value();
+                // error << "epoch: " << epoch << ",len:" << path.size() << std::endl;
+                // error << "exact:" << exact << std::endl;
+                // error << "value: " << move.value() << std::endl;
+                // error << "errorr: " << errorr << std::endl;
+                // error << move << std::endl;
+                // error << move.before_state() << std::endl << std::endl;
+                //if(epoch > 10) std::cin.get();
 
                 /**
                  * V(S(t)) = V(S(t)) + alpha * error
                  */
-                exact = move.reward() + update(before_move.after_state(), alpha * errorr);
+                exact = move.reward() + update(move.before_state(), alpha * errorr);
             }
         }
 
@@ -199,7 +237,7 @@ class learning {
                 float coef = 100.0 / unit;
                 info << n;
                 info << "\t" "mean = " << mean;
-                info << "\t" "max = " << max;
+                info << "\t" "max = " << max << std::endl;
 
                 int terminalTile[10] = {32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384};
                 float tileIndex[10] ={ 100,  0,   0,   0,   0,    0,    0,    0,    0,     0};
