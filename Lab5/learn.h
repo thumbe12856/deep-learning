@@ -70,47 +70,56 @@ class learning {
             //std::cin.get(); 
             state* best = after;
 
+			float e = 0;
             for (state* move = after; move != after + 4; move++) {
                 if (move->assign(b)) {
                     /**
-                     after state
+                     TD after state
                      * V(S(t)') = R(t+1) + V(S(t)') = estimate(move.after_state()) + move.reward()
                     */
-                    // e = move->reward() + estimate(move->after_state());
-                    // move->set_value(e);
+                    e = move->reward() + estimate(move->after_state());
+                    move->set_value(e);
+					
+                    if (move->value() > best->value()) {
+                        best = move;
+                    }
+                } else {
+                    move->set_value(-std::numeric_limits<float>::max());
+                }
+            }
+            return *best;
+        }
+		
+		state TDstate_select_best_move(const board& b, int epoch) const {
+			state after[4] = { 0, 1, 2, 3 }; // up, right, down, left
+            //std::cin.get(); 
+            state* best = after;
+
+            for (state* move = after; move != after + 4; move++) {
+                if (move->assign(b)) {
 
                     /**
-                     state
+                     TD state
                      * V(S(t)) = R(t+1) + V(S(t+1)) = move.reward() + estimate(move.after_state().popup()) 
-                    */
+                     */
                     board tempB = move->after_state();
                     int space[17];
-                    float e = 0;
+                    float e = 0, tempE = 0;
                     tempB.finadAllPopup(space);
                     int sum = space[16];
-                    // error << "sum:" << space[16] << std::endl;
-                    // error << "original borad:" << std::endl << tempB << std::endl;
                     for(int i = 0; i < sum; i++) {
                         board tempB1 = move->after_state();
                         tempB1.set(space[i], 1);
-                        // error << "set borad1:" << std::endl  << tempB1 << std::endl;
-                        // std::cin.get();
-                        e += estimate(tempB1);
+						tempE = estimate(tempB1);
+						e += tempE;
 
                         board tempB2 = move->after_state();
                         tempB2.set(space[i], 2);
-                        // error << "set borad2:" << std::endl  << tempB2 << std::endl;
-                        // std::cin.get();
-                        e += estimate(tempB2);
+						tempE = estimate(tempB2);
+						e += tempE;
                     }
-
-                    /*  
-                    if(epoch > 10) {
-                        error << "e:" << e << std::endl;
-                        std::cin.get();
-                    }
-                    */
-                    move->set_value(move->reward() + e / sum);
+					
+                    move->set_value(move->reward() + e / (sum * 2));
 
                     if (move->value() > best->value()) {
                         best = move;
@@ -118,11 +127,9 @@ class learning {
                 } else {
                     move->set_value(-std::numeric_limits<float>::max());
                 }
-                //error << "move->value():" << move->value() << std::endl;
-                //std::cin.get();
             }
             return *best;
-        }
+		}
 
         /**
          * update the tuple network by an episode
@@ -140,12 +147,8 @@ class learning {
          */
         void update_episode( int epoch, std::vector<state>& path, float alpha = 0.1) const {
 
-            /**
-             * V(terminal state) = 0
-             * terminal state = (path.size()-1).after_state().popup()
-             */
             float exact = 0;
-
+			
             for (path.pop_back() /* terminal state */; path.size(); path.pop_back()) {
 
                 /**
@@ -165,35 +168,41 @@ class learning {
                  * after state:
                  * R(t+1) + V(S(t+1)') - V(S(t)')
                  */
-                // float errorr = move.reward() + exact - move.value();
+                float errorr = move.reward() + exact - move.value();
 
                 /**
-                 * 
                  * V(S(t)') = V(S(t)') + alpha * error
                  */
-                // exact = move.reward() + update(move.after_state(), alpha * errorr);
-
-
-                /**
-                 * state:
-                 * R(t+1) + V(S(t+1)) - V(S(t))
-                 */
-                float errorr = move.reward() + exact - move.value();
-                // error << "epoch: " << epoch << ",len:" << path.size() << std::endl;
-                // error << "exact:" << exact << std::endl;
-                // error << "value: " << move.value() << std::endl;
-                // error << "errorr: " << errorr << std::endl;
-                // error << move << std::endl;
-                // error << move.before_state() << std::endl << std::endl;
-                //if(epoch > 10) std::cin.get();
-
-                /**
-                 * V(S(t)) = V(S(t)) + alpha * error
-                 */
-                exact = move.reward() + update(move.before_state(), alpha * errorr);
+                exact = move.reward() + update(move.after_state(), alpha * errorr);
             }
         }
-
+		
+		void TDstate_update_episode( int epoch, std::vector<state>& path, float alpha = 0.1) const {
+			
+            /**
+             * V(terminal state) = 0
+             * terminal state = (path.size()-1).after_state().popup()
+             */
+			state& lastMove = path.back();
+			float lastError = 0 - estimate(lastMove.before_state());
+			update(lastMove.before_state(), alpha * lastError);
+			
+            for (path.pop_back() /* terminal state */; path.size(); path.pop_back()) {
+				state& move = path.back();
+				
+				/**
+				 * state:
+				 * R(t+1) + V(S(t+1)) - V(S(t))
+				 */
+				float errorr = move.value() - estimate(move.before_state());
+				
+				/**
+                 * V(S(t)) = V(S(t)) + alpha * error
+                 */
+				update(move.before_state(), alpha * errorr);
+			}
+		}
+		
         /**
          * update the statistic, and display the status once in 1000 episodes by default
          *

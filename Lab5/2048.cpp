@@ -75,7 +75,7 @@ int main(int argc, const char* argv[]) {
 	path.reserve(20000);
 
 	std::ofstream recordFile;
-	recordFile.open("./result/T-state-new.csv");
+	recordFile.open("./result/T-after-state.csv");
 
 	recordFile << "mean,sum,32,64,128,256,512,1024,2048,4096,8192,16384,";
 
@@ -84,11 +84,14 @@ int main(int argc, const char* argv[]) {
 		int score = 0;
 
 		// play an episode
-		//error << "begin episode" << n << std::endl;
 		b.init();
 		while (true) {
 			debug << "state" << std::endl << b;
+			// select move by TD after_state
 			state best = tdl.select_best_move(b, n);
+			
+			// select move by TD state
+			// state best = TDstate_select_best_move(b, n);
 			path.push_back(best);
 
 			if (best.is_valid()) {
@@ -104,10 +107,12 @@ int main(int argc, const char* argv[]) {
 				break;
 			}
 		}
-		//error << "end episode " << n << std::endl;
-
-		// update by TD(0)
+		// update by TD after_state
 		tdl.update_episode(n, path, alpha);
+		
+		// update by TD state
+		// tdl.TDstate_update_episode(n, path, alpha);		
+		
 		tdl.make_statistic(n, recordFile, b, score);
 		path.clear();
 	}

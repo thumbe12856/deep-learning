@@ -153,13 +153,6 @@ public:
 			}
 			space[16] = num;
 		return space;
-		/*
-		if (num) {
-			for(int i=0; i<num; i++) {
-				set(space[i], rand() % 10 ? 1 : 2);
-			}
-		}
-		*/
 	}
 
 	/**
