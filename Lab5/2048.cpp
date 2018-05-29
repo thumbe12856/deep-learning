@@ -75,7 +75,7 @@ int main(int argc, const char* argv[]) {
 	path.reserve(20000);
 
 	std::ofstream recordFile;
-	recordFile.open("./result/T-after-state.csv");
+	recordFile.open("./result/TD-after-state.csv");
 
 	recordFile << "mean,sum,32,64,128,256,512,1024,2048,4096,8192,16384,";
 
@@ -91,7 +91,7 @@ int main(int argc, const char* argv[]) {
 			state best = tdl.select_best_move(b, n);
 			
 			// select move by TD state
-			// state best = TDstate_select_best_move(b, n);
+			// state best = tdl.TDstate_select_best_move(b, n);
 			path.push_back(best);
 
 			if (best.is_valid()) {

@@ -100,7 +100,8 @@ class learning {
 
                     /**
                      TD state
-                     * V(S(t)) = R(t+1) + V(S(t+1)) = move.reward() + estimate(move.after_state().popup()) 
+                     * V(S(t)) = R(t+1) + V(S(t+1)) = 
+                     *   move.reward() + estimate(move.after_state().popup()) 
                      */
                     board tempB = move->after_state();
                     int space[17];
@@ -110,16 +111,16 @@ class learning {
                     for(int i = 0; i < sum; i++) {
                         board tempB1 = move->after_state();
                         tempB1.set(space[i], 1);
-						tempE = estimate(tempB1);
+						tempE = estimate(tempB1) * 0.9;
 						e += tempE;
 
                         board tempB2 = move->after_state();
                         tempB2.set(space[i], 2);
-						tempE = estimate(tempB2);
+						tempE = estimate(tempB2) * 0.1;
 						e += tempE;
                     }
 					
-                    move->set_value(move->reward() + e / (sum * 2));
+                    move->set_value(move->reward() + e / sum);
 
                     if (move->value() > best->value()) {
                         best = move;
@@ -152,9 +153,7 @@ class learning {
             for (path.pop_back() /* terminal state */; path.size(); path.pop_back()) {
 
                 /**
-                 * move = S(t)
-                 * V(S(t)') = after state = estimate(move.after_state()) + move.reward()
-                 * V(S(t+1)) = state = estimate(move.after_state().popup()) + move.reward()
+                 * V(S(t)') = after state = estimate(move.after_state())
                  * R(t+1) = move.reward()
                  */
 
@@ -165,7 +164,6 @@ class learning {
                 state& move = path.back();
 
                 /**
-                 * after state:
                  * R(t+1) + V(S(t+1)') - V(S(t)')
                  */
                 float errorr = move.reward() + exact - move.value();
@@ -181,12 +179,12 @@ class learning {
 			
             /**
              * V(terminal state) = 0
-             * terminal state = (path.size()-1).after_state().popup()
+             * terminal state = (path.size()-1).before_state()
              */
 			state& lastMove = path.back();
-			float lastError = 0 - estimate(lastMove.before_state());
+			float lastError = lastMove.reward() + 0 - estimate(lastMove.before_state());
 			update(lastMove.before_state(), alpha * lastError);
-			
+
             for (path.pop_back() /* terminal state */; path.size(); path.pop_back()) {
 				state& move = path.back();
 				
@@ -194,7 +192,7 @@ class learning {
 				 * state:
 				 * R(t+1) + V(S(t+1)) - V(S(t))
 				 */
-				float errorr = move.value() - estimate(move.before_state());
+				float errorr = move.reward() + move.value() - estimate(move.before_state());
 				
 				/**
                  * V(S(t)) = V(S(t)) + alpha * error

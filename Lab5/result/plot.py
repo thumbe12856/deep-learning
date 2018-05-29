@@ -2,10 +2,10 @@ import pandas as pd
 import csv
 import matplotlib.pyplot as plt
 
-state_datas = pd.read_csv('T-state-new.csv')
+state_datas = pd.read_csv('TD-state.csv')
 state_datas.fillna(0, inplace=True)
 
-after_state_datas = pd.read_csv('T-after-state-new.csv')
+after_state_datas = pd.read_csv('TD-after-state.csv')
 after_state_datas.fillna(0, inplace=True)
 
 def plotFunction(column):
