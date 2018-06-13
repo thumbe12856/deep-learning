@@ -22,8 +22,8 @@ EPISODES = 1000  # number of episodes
 EPS_START = 1  # e-greedy threshold start value
 EPS_END = 0.1  # e-greedy threshold end value
 EPS_DECAY = 0.995  # e-greedy threshold decay
-GAMMA = 0.8  # Q-learning discount factor
-LR = 0.001  # NN optimizer learning rate
+GAMMA = 0.95  # Q-learning discount factor
+LR = 0.0005  # NN optimizer learning rate
 HIDDEN_LAYER = 32  # NN hidden layer size
 BATCH_SIZE = 128  # Q-learning batch size
 Memory_Capacity = 5000
@@ -58,19 +58,16 @@ class Network(nn.Module):
         nn.Module.__init__(self)
         self.l1 = nn.Linear(4, HIDDEN_LAYER)
         self.l2 = nn.Linear(HIDDEN_LAYER, 2)
-        #self.l2 = nn.Linear(HIDDEN_LAYER, 16)
         self.l3 = nn.Linear(16, 2)
 
     def forward(self, x):
         x = F.relu(self.l1(x))
-        #x = F.relu(self.l2(x))
         x = self.l2(x)
-        #x = self.l3(x)
         return x
 
 
 env = gym.make('CartPole-v0')
-env._max_episode_steps = 1000
+env._max_episode_steps = 500
 env = wrappers.Monitor(env, './tmp/cartpole-v0-1', force=True)
 
 
@@ -127,8 +124,7 @@ def run_episode(e, environment):
         learn()
 
         if(e % 50 == 0):
-
-            #torch.save(model, 'originalNetwork.pt')
+            torch.save(model, 'originalNetwork.pt')
             #targetModel = torch.load('originalNetwork.pt')
             targetModel.load_state_dict(model.state_dict())
 
@@ -170,17 +166,8 @@ def learn():
     # current Q values are estimated by NN for all actions
     current_q_values = model(batch_state).gather(1, batch_action)
     # expected Q values are estimated from actions which gives maximum Q value
-    #max_next_q_values = model(batch_next_state).detach().max(1)[0]
     max_next_q_values = targetModel(batch_next_state).detach().max(1)[0]
     expected_q_values = batch_reward + (GAMMA * max_next_q_values)
-
-    '''
-    print('after update, Target Network:')
-    for name, param in targetModel.named_parameters():
-        if param.requires_grad:
-            if(name == 'l2.weight'):
-                print name, param.data[0][0:10]
-    '''
 
     # loss is measured from error between current and newly expected Q values
     loss = F.smooth_l1_loss(current_q_values, expected_q_values)
@@ -190,7 +177,7 @@ def learn():
     loss.backward()
     optimizer.step()
 
-
+times = 0
 def plot_durations():
     plt.figure(2)
     plt.clf()
@@ -199,7 +186,7 @@ def plot_durations():
     plt.xlabel('Episode')
     plt.ylabel('Reward')
     plt.plot(durations_t.numpy())
-    plt.savefig('result.png')
+    plt.savefig('result1.png')
 
     '''
     # take 100 episode averages and plot them too
@@ -211,7 +198,6 @@ def plot_durations():
 
     plt.pause(0.001)  # pause a bit so that plots are updated
 
-
 for e in range(EPISODES):
     run_episode(e, env)
 
@@ -220,4 +206,3 @@ env.render(close=True)
 env.close()
 #plt.ioff()
 #plt.show()
-plt.savefig('result.png')
