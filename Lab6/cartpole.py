@@ -58,8 +58,7 @@ class Network(nn.Module):
         nn.Module.__init__(self)
         self.l1 = nn.Linear(4, HIDDEN_LAYER)
         self.l2 = nn.Linear(HIDDEN_LAYER, 2)
-        self.l3 = nn.Linear(16, 2)
-
+        
     def forward(self, x):
         x = F.relu(self.l1(x))
         x = self.l2(x)
